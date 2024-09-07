@@ -13,8 +13,6 @@ from neomodel import (
     ArrayProperty,
 )
 
-config.DATABASE_URL = "bolt://neo4j:neo4jtest@localhost:7687"
-
 
 class FromRel(StructuredRel):
     pass
@@ -39,7 +37,7 @@ class User(StructuredNode):
     posted = RelationshipTo("Post", "POSTED", model=FromRel)
     following = RelationshipTo("User", "FOLLOWING", model=FromRel)
     block = RelationshipTo("User", "BLOCK", model=FromRel)
-    reaction = RelationshipTo("Post" | "Comment", "REACTION", model=Reaction)
+    reaction = RelationshipTo("Post" or "Comment", "REACTION", model=Reaction)
     hosted = RelationshipTo("Recruitment", "HOSTED", model=FromRel)
     commented = RelationshipTo("Comment", "COMMENTED", model=FromRel)
     applied = RelationshipTo("Recruitment", "APPLIED", model=FromRel)
@@ -70,78 +68,78 @@ class Comment(StructuredNode):
     reply = RelationshipTo("Comment", "REPLY", model=FromRel)
 
 
-jim = Person(name="Jim", age=3).save()  # Create
-jim.age = 4
-jim.save()  # Update, (with validation)
-jim.delete()
-jim = Person(name="Jim", age=3).save()
-jim.refresh()  # reload properties from the database
-id = jim.element_id  # neo4j internal element id
+# jim = Person(name="Jim", age=3).save()  # Create
+# jim.age = 4
+# jim.save()  # Update, (with validation)
+# jim.delete()
+# jim = Person(name="Jim", age=3).save()
+# jim.refresh()  # reload properties from the database
+# id = jim.element_id  # neo4j internal element id
 
-# Return all nodes
-all_nodes = Person.nodes.all()
+# # Return all nodes
+# all_nodes = Person.nodes.all()
 
-# Returns Person by Person.name=='Jim' or raises neomodel.DoesNotExist if no match
-query = f"MATCH (n) WHERE elementId(n) = '{id}' RETURN n"
-results, meta = db.cypher_query(query)
+# # Returns Person by Person.name=='Jim' or raises neomodel.DoesNotExist if no match
+# query = f"MATCH (n) WHERE elementId(n) = '{id}' RETURN n"
+# results, meta = db.cypher_query(query)
 
-# Returns Person list by Person.name=='Jim' or raises neomodel.DoesNotExist if no match
-jim = Person.nodes.filter(name="Jim")
+# # Returns Person list by Person.name=='Jim' or raises neomodel.DoesNotExist if no match
+# jim = Person.nodes.filter(name="Jim")
 
-# Will return None unless "bob" exists
-someone = Person.nodes.get_or_none(name="bob")
+# # Will return None unless "bob" exists
+# someone = Person.nodes.get_or_none(name="bob")
 
-# Will return the first Person node with the name bob. This raises neomodel.DoesNotExist if there's no match.
-someone = Person.nodes.first(name="Jim")
+# # Will return the first Person node with the name bob. This raises neomodel.DoesNotExist if there's no match.
+# someone = Person.nodes.first(name="Jim")
 
-# Will return the first Person node with the name bob or None if there's no match
-someone = Person.nodes.first_or_none(name="bob")
+# # Will return the first Person node with the name bob or None if there's no match
+# someone = Person.nodes.first_or_none(name="bob")
 
-# Return set of nodes
-people = Person.nodes.filter(age__gt=3)
+# # Return set of nodes
+# people = Person.nodes.filter(age__gt=3)
 
-germany = Country(code="DE").save()
-jim = Person(name="Jim", age=3).save()
-jim.country.connect(germany)
-berlin = City(name="Berlin").save()
-berlin.country.connect(germany)
-jim.city.connect(berlin)
-germany.inhabitant.connect(jim)
+# germany = Country(code="DE").save()
+# jim = Person(name="Jim", age=3).save()
+# jim.country.connect(germany)
+# berlin = City(name="Berlin").save()
+# berlin.country.connect(germany)
+# jim.city.connect(berlin)
+# germany.inhabitant.connect(jim)
 
-if jim.country.is_connected(germany):
-    print("Jim's from Germany")
+# if jim.country.is_connected(germany):
+#     print("Jim's from Germany")
 
-for p in germany.inhabitant.all():
-    print(p.name)  # Jim
+# for p in germany.inhabitant.all():
+#     print(p.name)  # Jim
 
-len(germany.inhabitant)  # 1
+# len(germany.inhabitant)  # 1
 
-# Find people called 'Jim' in germany
-# germany.inhabitant.search(name="Jim") 使えない
+# # Find people called 'Jim' in germany
+# # germany.inhabitant.search(name="Jim") 使えない
 
-# Find all the people called in germany except 'Jim'
-germany.inhabitant.exclude(name="Jim")
+# # Find all the people called in germany except 'Jim'
+# germany.inhabitant.exclude(name="Jim")
 
-# Remove Jim's country relationship with Germany
-jim.country.disconnect(germany)
+# # Remove Jim's country relationship with Germany
+# jim.country.disconnect(germany)
 
-usa = Country(code="US").save()
-jim.country.connect(usa)
-jim.country.connect(germany)
+# usa = Country(code="US").save()
+# jim.country.connect(usa)
+# jim.country.connect(germany)
 
-# Remove all of Jim's country relationships
-jim.country.disconnect_all()
+# # Remove all of Jim's country relationships
+# jim.country.disconnect_all()
 
-jim.country.connect(usa)
-# Replace Jim's country relationship with a new one
-jim.country.replace(germany)
+# jim.country.connect(usa)
+# # Replace Jim's country relationship with a new one
+# jim.country.replace(germany)
 
-# The following call will generate one MATCH with traversal per
-# item in .fetch_relations() call
-results = Person.nodes.fetch_relations("country").all()
-for result in results:
-    print(result[0])  # Person
-    print(result[1])  # associated Country
+# # The following call will generate one MATCH with traversal per
+# # item in .fetch_relations() call
+# results = Person.nodes.fetch_relations("country").all()
+# for result in results:
+#     print(result[0])  # Person
+#     print(result[1])  # associated Country
 
-# Go from person to City then Country
-Person.nodes.fetch_relations("city__country").all()
+# # Go from person to City then Country
+# Person.nodes.fetch_relations("city__country").all()
