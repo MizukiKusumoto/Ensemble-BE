@@ -6,7 +6,7 @@ import api.schemas.user as user_schema
 from api.cruds.user import create_user_func, get_user_by_email_func, get_user_by_id_func
 from api.models.main import User
 
-config.DATABASE_URL = "bolt://neo4j:neo4jtest@localhost:7687"
+config.DATABASE_URL = "bolt://neo4j:0oFKulfd@localhost:7474"
 
 router = APIRouter()
 
