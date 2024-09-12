@@ -50,8 +50,3 @@ if __name__ == "__main__":
     all_users = read_all_users()
     save_bert_vectors(all_users)
     print("BERTベクトルをデータベースに保存しました。")
-    
-# torch
-# transformers
-# fugashi
-# ipadic

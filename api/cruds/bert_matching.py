@@ -66,5 +66,3 @@ if __name__ == "__main__":
     print("類似ユーザー:")
     for user in similar_users:
         print(f"- {user['name']}: {user['similarity']:.4f}")
-        
-# pip install transformers scikit-learn neo4j-driver
