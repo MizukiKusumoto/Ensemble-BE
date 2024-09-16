@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field
+from typing import List, Optional # 渡邊T追加分
 import datetime
 
 
@@ -41,3 +42,13 @@ class UserUpdateRequest(BaseModel):
 
 class UserDeleteRequest(BaseModel):
     id: str = Field(...)
+
+
+# 渡邊T追加分
+class SimilarUserResponse(BaseModel):
+    name: str = Field(..., min_length=1, max_length=50)
+    similarity: float = Field(...)
+
+class UserUpdateLabelsRequest(BaseModel):
+    id: str = Field(...)
+    labels: Optional[List[str]] = None  # 更新後のラベルのリスト
