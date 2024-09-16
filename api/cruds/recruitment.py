@@ -4,10 +4,10 @@ from neomodel import db
 
 def create_recruitment(title: str, description: str, image_urls: list, deadline: str):
     """Neo4j上にRecruitmentノードを作成する"""
-    query = "MERGE (r:Recruitment { title: $title, description: $description, image_urls: $image_urls, deadline: $deadline }) RETURN r"
+    query = "MERGE (r:Recruitment { title: $title, description: $description, image_urls: $image_urls, deadline: $deadline, labels: $labels }) RETURN r"
     results, meta = db.cypher_query(
         query, 
-        {'title': title, 'description': description, 'image_urls': image_urls, 'deadline': deadline}
+        {'title': title, 'description': description, 'image_urls': image_urls, 'deadline': deadline, 'labels': labels}
     )
     return results
 

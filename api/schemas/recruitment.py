@@ -8,6 +8,7 @@ class RecruitmentCreate(BaseModel):
     description: str = Field(..., max_length=500)
     image_urls: Optional[List[str]] = None  # Optional
     deadline: datetime.datetime 
+    labels: Optional[List[str]] = None  # labels フィールドを追加
     
 # class RecruitmentResponse(RecruitmentCreate):
 #     id: str

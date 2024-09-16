@@ -16,6 +16,7 @@ async def create_recruitment(recruitment_data: RecruitmentCreate):
         description=recruitment_data.description,
         image_urls=recruitment_data.image_urls,
         deadline=recruitment_data.deadline,
+        labels=recruitment_data.labels,  # 属性部分を追加
     ).save()
     return {
         "id": recruitment.element_id,
