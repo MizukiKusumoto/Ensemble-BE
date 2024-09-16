@@ -57,6 +57,7 @@ class Recruitment(StructuredNode):
     description = StringProperty(max_length=500, required=True)
     image_urls = ArrayProperty(StringProperty())
     deadline = DateTimeProperty()
+    labels = ArrayProperty(StringProperty())  # 募集にも属性を追加
 
 
 class Comment(StructuredNode):
