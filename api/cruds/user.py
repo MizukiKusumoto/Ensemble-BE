@@ -1,6 +1,7 @@
 from api.models.main import User
 from neomodel import db
 from api.utils.bert import get_user_vector
+from fastapi import HTTPException
 
 # BERT関連のインポート（渡邊追加分）
 # from transformers import BertJapaneseTokenizer, BertModel
