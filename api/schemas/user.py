@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List, Optional # 渡邊T追加分
+from typing import List, Optional  # 渡邊T追加分
 import datetime
 
 
@@ -7,19 +7,22 @@ class UserCreateRequest(BaseModel):
     name: str = Field(..., min_length=1, max_length=50)
     email: str = Field(..., min_length=1, max_length=50)
     password: str = Field(..., min_length=8, max_length=50)
+    labels: list[str] = Field(...)
 
 
 class UserCreateResponse(BaseModel):
     id: str = Field(...)
 
 
-class UserReadRequest(BaseModel):
+class UserLoginRequest(BaseModel):
     email: str = Field(..., min_length=1, max_length=50)
+    password: str = Field(..., min_length=8, max_length=50)
 
 
 class UserReadResponse(BaseModel):
     id: str = Field(...)
     name: str = Field(..., min_length=1, max_length=50)
+    created_at: datetime.datetime = Field(...)
     email: str = Field(..., min_length=1, max_length=50)
     is_available: bool = Field(...)
     activity: float = Field(...)
@@ -48,6 +51,7 @@ class UserDeleteRequest(BaseModel):
 class SimilarUserResponse(BaseModel):
     name: str = Field(..., min_length=1, max_length=50)
     similarity: float = Field(...)
+
 
 class UserUpdateLabelsRequest(BaseModel):
     id: str = Field(...)
