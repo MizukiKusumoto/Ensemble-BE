@@ -52,20 +52,20 @@ def post_user(
     return {"id": user.element_id}
 
 # 渡邊T追加分
-@router.get("/{uid}/similar", response_model=list[user_schema.SimilarUserResponse])
-def get_similar_users(uid: str) -> list:
+@router.get("/{element_id}/similar", response_model=list[user_schema.SimilarUserResponse])
+def get_similar_users(element_id: str) -> list:  
     """指定されたユーザーIDに類似したユーザーを取得する"""
-    user: User = get_user_by_id_func(uid)
+    user: User = get_user_by_id_func(element_id)
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
 
     similar_users = find_similar_users_neo4j(user.name, top_k=15)
     return similar_users
 
-@router.put("/{uid}/labels", response_model=user_schema.UserReadResponse)
-def update_user_labels(uid: str, labels_data: user_schema.UserUpdateLabelsRequest):
+@router.put("/{element_id}/labels", response_model=user_schema.UserReadResponse)
+def update_user_labels(element_id: str, labels_data: user_schema.UserUpdateLabelsRequest):  # user_id を element_id に変更
     """ユーザーの属性を更新する"""
-    user = update_user_labels_func(uid, labels_data.labels)
+    user = update_user_labels_func(element_id, labels_data.labels)  # element_id を渡す
     return {
         "id": user.uid,
         "name": user.name,

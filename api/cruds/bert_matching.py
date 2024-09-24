@@ -4,6 +4,33 @@ from sklearn.neighbors import NearestNeighbors
 import numpy as np
 from api.models.main import User
 from api.utils.bert import get_user_vector
+from fastapi import HTTPException
+import numpy as np
+# from sklearn.decomposition import PCA
+
+# def reduce_dimensions(vectors, target_dim):
+#   """ベクトルの次元数をtarget_dimに削減する"""
+#   pca = PCA(n_components=target_dim)
+#   reduced_vectors = pca.fit_transform(vectors)
+#   return reduced_vectors
+
+import numpy as np
+
+def pad_vectors(vectors, target_dim):
+  """ベクトルの次元数をtarget_dimに揃える"""
+  padded_vectors = []
+  for vector in vectors:
+    # 要素がリストでない場合はリストに変換
+    if not isinstance(vector, list):
+        vector = vector.tolist() 
+
+    if len(vector) < target_dim:
+      padding = np.zeros(target_dim - len(vector))
+      padded_vector = np.concatenate([vector, padding])
+    else:
+      padded_vector = vector[:target_dim]  # 次元数が大きい場合は切り詰める
+    padded_vectors.append(padded_vector)
+  return padded_vectors
 
 def find_similar_users_neo4j(target_user_name: str, top_k: int = 15) -> list:
     """
@@ -22,7 +49,12 @@ def find_similar_users_neo4j(target_user_name: str, top_k: int = 15) -> list:
     for user in user_data:
         user_names.append(user['name'])
         user_vectors.append(user['vector'])
-    user_vectors = np.array(user_vectors)
+    
+    user_vectors = [v for v in user_vectors if v is not None]
+    user_names = [user_names[i] for i, v in enumerate(user_vectors) if v is not None] # 対応するユーザー名も除外
+    
+    user_vectors = pad_vectors(user_vectors, target_dim=768)  # 次元数を768に揃える
+    user_vectors = np.array(user_vectors) # 修正後のベクトルを変換
 
     # ターゲットユーザーのベクトルを取得
     target_vector = None

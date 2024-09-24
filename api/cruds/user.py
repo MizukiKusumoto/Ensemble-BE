@@ -52,9 +52,12 @@ def get_user_by_email_func(email: str) -> User:
     return User.nodes.get_or_none(email=email)
 
 
-def get_user_by_id_func(uid: str) -> User:
-    try:
-        user = User.nodes.get(uid=uid)
+def get_user_by_id_func(element_id: str) -> User:  
+    """elementIdで指定されたユーザーを取得する"""
+    query = f"MATCH (u:User) WHERE elementId(u) = '{element_id}' RETURN u" 
+    results, meta = db.cypher_query(query)
+    if results:
+        user = User.inflate(results[0][0])
         return user
-    except User.DoesNotExist:
+    else:
         raise HTTPException(status_code=404, detail="User not found")
