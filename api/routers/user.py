@@ -7,7 +7,7 @@ from api.cruds.user import create_user_func, get_user_by_email_func, get_user_by
 from api.cruds.bert_matching import find_similar_users_neo4j # 渡邊T追加分
 from api.models.main import User
 
-config.DATABASE_URL = "bolt://neo4j:0oFKulfd@localhost:7474"
+config.DATABASE_URL = "bolt://neo4j:0oFKulfd@localhost:7687"
 
 router = APIRouter()
 
@@ -52,22 +52,22 @@ def post_user(
     return {"id": user.element_id}
 
 # 渡邊T追加分
-@router.get("/{user_id}/similar", response_model=List[user_schema.SimilarUserResponse])
-def get_similar_users(user_id: str) -> list:
+@router.get("/{uid}/similar", response_model=list[user_schema.SimilarUserResponse])
+def get_similar_users(uid: str) -> list:
     """指定されたユーザーIDに類似したユーザーを取得する"""
-    user: User = get_user_by_id_func(user_id)
+    user: User = get_user_by_id_func(uid)
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
 
     similar_users = find_similar_users_neo4j(user.name, top_k=15)
     return similar_users
 
-@router.put("/{user_id}/labels", response_model=user_schema.UserReadResponse)
-def update_user_labels(user_id: str, labels_data: user_schema.UserUpdateLabelsRequest):
+@router.put("/{uid}/labels", response_model=user_schema.UserReadResponse)
+def update_user_labels(uid: str, labels_data: user_schema.UserUpdateLabelsRequest):
     """ユーザーの属性を更新する"""
-    user = update_user_labels_func(user_id, labels_data.labels)
+    user = update_user_labels_func(uid, labels_data.labels)
     return {
-        "id": user.element_id,
+        "id": user.uid,
         "name": user.name,
         "email": user.email,
         "is_available": user.is_available,

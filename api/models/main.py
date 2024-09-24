@@ -41,6 +41,7 @@ class User(StructuredNode):
     hosted = RelationshipTo("Recruitment", "HOSTED", model=FromRel)
     commented = RelationshipTo("Comment", "COMMENTED", model=FromRel)
     applied = RelationshipTo("Recruitment", "APPLIED", model=FromRel)
+    uid = UniqueIdProperty() # 渡邊T追加分
 
 
 class Post(StructuredNode):

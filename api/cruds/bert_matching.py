@@ -2,6 +2,8 @@ from neomodel import db
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.neighbors import NearestNeighbors
 import numpy as np
+from api.models.main import User
+from api.utils.bert import get_user_vector
 
 def find_similar_users_neo4j(target_user_name: str, top_k: int = 15) -> list:
     """
@@ -30,8 +32,8 @@ def find_similar_users_neo4j(target_user_name: str, top_k: int = 15) -> list:
             break
 
     if target_vector is None:
-        print(f"ターゲットユーザー {target_user_name} は見つかりませんでした。")
-        return []
+        raise HTTPException(status_code=404, detail=f"ターゲットユーザー {target_user_name} は見つかりませんでした。")
+
 
     # 近傍探索モデルの構築と検索
     knn = NearestNeighbors(n_neighbors=top_k, metric='cosine')
