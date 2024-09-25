@@ -33,12 +33,15 @@ def get_user_by_id(id: str) -> dict[str, str]:
         "introduction": user.introduction,
         "profile_image": user.profile_image,
         "background_image": user.background_image,
+        "labels": user.labels,
     }
 
 
 @router.post("/user/login", response_model=user_schema.UserReadResponse)
 def login_user(item: user_schema.UserLoginRequest) -> dict[str, str]:
-    user: User = login_user_func(email=item.email, password=item.password)
+    user: user_schema.UserReadResponse = login_user_func(
+        email=item.email, password=item.password
+    )
     return user
 
 
@@ -52,11 +55,11 @@ def post_user(
 
 # 渡邊T追加分
 @router.get(
-    "/user/similar/{user_id}", response_model=list[user_schema.SimilarUserResponse]
+    "/user/similar/{element_id}", response_model=list[user_schema.SimilarUserResponse]
 )
-def get_similar_users(user_id: str) -> list:
+def get_similar_users(element_id: str) -> list:
     """指定されたユーザーIDに類似したユーザーを取得する"""
-    user: User = get_user_by_id_func(id=user_id)
+    user: User = get_user_by_id_func(element_id)
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
 
@@ -64,18 +67,12 @@ def get_similar_users(user_id: str) -> list:
     return similar_users
 
 
-@router.put("/user/labels/{user_id}", response_model=user_schema.UserReadResponse)
-def update_user_labels(user_id: str, labels_data: user_schema.UserUpdateLabelsRequest):
+@router.put("/user/labels", response_model=user_schema.UserUpdateLabelsResponse)
+def update_user_labels(
+    req: user_schema.UserUpdateLabelsRequest,
+):  # user_id を element_id に変更
     """ユーザーの属性を更新する"""
-    user = update_user_labels_func(user_id, labels_data.labels)
-    return {
-        "id": user.element_id,
-        "name": user.name,
-        "email": user.email,
-        "is_available": user.is_available,
-        "activity": user.activity,
-        "latest_login": user.latest_login,
-        "introduction": user.introduction,
-        "profile_image": user.profile_image,
-        "background_image": user.background_image,
-    }
+    labels: user_schema.UserUpdateLabelsResponse = update_user_labels_func(
+        req.id, req.labels
+    )  # element_id を渡す
+    return labels

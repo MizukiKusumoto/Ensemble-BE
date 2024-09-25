@@ -30,17 +30,7 @@ class UserReadResponse(BaseModel):
     introduction: str = Field(..., max_length=500)
     profile_image: str = Field(...)
     background_image: str = Field(...)
-
-
-class UserUpdateRequest(BaseModel):
-    id: str = Field(...)
-    name: str = Field(None, min_length=1, max_length=50)
-    password: str = Field(None, min_length=8, max_length=50)
-    is_available: bool = Field(None)
-    activity: float = Field(None)
-    introduction: str = Field(None, max_length=500)
-    profile_image: str = Field(None)
-    background_image: str = Field(None)
+    labels: List[str] = Field(...)
 
 
 class UserDeleteRequest(BaseModel):
@@ -56,3 +46,7 @@ class SimilarUserResponse(BaseModel):
 class UserUpdateLabelsRequest(BaseModel):
     id: str = Field(...)
     labels: Optional[List[str]] = None  # 更新後のラベルのリスト
+
+
+class UserUpdateLabelsResponse(BaseModel):
+    labels: Optional[List[str]] = None

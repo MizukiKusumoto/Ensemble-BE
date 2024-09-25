@@ -34,6 +34,8 @@ class User(StructuredNode):
     introduction = StringProperty(max_length=500, default="")
     profile_image = StringProperty(default="")
     background_image = StringProperty(default="")
+    labels = ArrayProperty(StringProperty())
+    vector = ArrayProperty(FloatProperty())
     posted = RelationshipTo("Post", "POSTED", model=FromRel)
     following = RelationshipTo("User", "FOLLOWING", model=FromRel)
     block = RelationshipTo("User", "BLOCK", model=FromRel)
