@@ -57,13 +57,12 @@ def post_user(
 @router.get(
     "/user/similar/{element_id}", response_model=list[user_schema.SimilarUserResponse]
 )
-def get_similar_users(element_id: str) -> list:
+def get_similar_users(element_id: str) -> list[user_schema.SimilarUserResponse]:
     """指定されたユーザーIDに類似したユーザーを取得する"""
     user: User = get_user_by_id_func(element_id)
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
-
-    similar_users = find_similar_users_neo4j(user.name, top_k=15)
+    similar_users = find_similar_users_neo4j(user.email, top_k=15)
     return similar_users
 
 

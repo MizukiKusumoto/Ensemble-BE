@@ -41,6 +41,7 @@ class UserDeleteRequest(BaseModel):
 class SimilarUserResponse(BaseModel):
     name: str = Field(..., min_length=1, max_length=50)
     similarity: float = Field(...)
+    labels: Optional[List[str]] = None
 
 
 class UserUpdateLabelsRequest(BaseModel):

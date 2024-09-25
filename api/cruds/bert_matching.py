@@ -6,6 +6,7 @@ from api.models.main import User
 from api.utils.bert import get_user_vector
 from fastapi import HTTPException
 import numpy as np
+
 # from sklearn.decomposition import PCA
 
 # def reduce_dimensions(vectors, target_dim):
@@ -16,59 +17,78 @@ import numpy as np
 
 import numpy as np
 
+
 def pad_vectors(vectors, target_dim):
-  """ベクトルの次元数をtarget_dimに揃える"""
-  padded_vectors = []
-  for vector in vectors:
-    # 要素がリストでない場合はリストに変換
-    if not isinstance(vector, list):
-        vector = vector.tolist() 
+    """ベクトルの次元数をtarget_dimに揃える"""
+    padded_vectors = []
+    for vector in vectors:
+        # 要素がリストでない場合はリストに変換
+        if not isinstance(vector, list):
+            vector = vector.tolist()
 
-    if len(vector) < target_dim:
-      padding = np.zeros(target_dim - len(vector))
-      padded_vector = np.concatenate([vector, padding])
-    else:
-      padded_vector = vector[:target_dim]  # 次元数が大きい場合は切り詰める
-    padded_vectors.append(padded_vector)
-  return padded_vectors
+        if len(vector) < target_dim:
+            padding = np.zeros(target_dim - len(vector))
+            padded_vector = np.concatenate([vector, padding])
+        else:
+            padded_vector = vector[:target_dim]  # 次元数が大きい場合は切り詰める
+        padded_vectors.append(padded_vector)
+    return padded_vectors
 
-def find_similar_users_neo4j(target_user_name: str, top_k: int = 15) -> list:
+
+def find_similar_users_neo4j(target_user_email: str, top_k: int = 15) -> list:
     """
     Neo4jデータベースからユーザーベクトルを取得し、
     ターゲットユーザーに類似したユーザーを検索する。
     結果をJSON形式で返す。
     """
 
-    query = "MATCH (u:User) RETURN u.name AS name, u.vector AS vector"
+    query = "MATCH (u:User) RETURN u.name AS name, u.vector AS vector, u.email AS email, u.labels AS labels"
     results, meta = db.cypher_query(query)
 
-    user_data = [{'name': row[0], 'vector': row[1]} for row in results]
+    user_data = [
+        {"name": row[0], "vector": row[1], "email": row[2], "labels": row[3]}
+        for row in results
+    ]
 
     user_names = []
     user_vectors = []
+    user_emails = []
+    user_labels = []
+
     for user in user_data:
-        user_names.append(user['name'])
-        user_vectors.append(user['vector'])
-    
+        user_names.append(user["name"])
+        user_vectors.append(user["vector"])
+        user_emails.append(user["email"])
+        user_labels.append(user["labels"])
+
     user_vectors = [v for v in user_vectors if v is not None]
-    user_names = [user_names[i] for i, v in enumerate(user_vectors) if v is not None] # 対応するユーザー名も除外
-    
+    user_names = [
+        user_names[i] for i, v in enumerate(user_vectors) if v is not None
+    ]  # 対応するユーザー名も除外
+    user_emails = [
+        user_emails[i] for i, v in enumerate(user_vectors) if v is not None
+    ]  # 対応するユーザーemailも除外
+    user_labels = [
+        user_labels[i] for i, v in enumerate(user_vectors) if v is not None
+    ]  # 対応するユーザーlabelも除外
+
     user_vectors = pad_vectors(user_vectors, target_dim=768)  # 次元数を768に揃える
-    user_vectors = np.array(user_vectors) # 修正後のベクトルを変換
+    user_vectors = np.array(user_vectors)  # 修正後のベクトルを変換
 
     # ターゲットユーザーのベクトルを取得
     target_vector = None
-    for i, name in enumerate(user_names):
-        if name == target_user_name:
+    for i, email in enumerate(user_emails):
+        if email == target_user_email:
             target_vector = user_vectors[i]
             break
 
     if target_vector is None:
-        raise HTTPException(status_code=404, detail=f"ターゲットユーザー {target_user_name} は見つかりませんでした。")
-
+        raise HTTPException(
+            status_code=404, detail=f"ターゲットユーザーは見つかりませんでした。"
+        )
 
     # 近傍探索モデルの構築と検索
-    knn = NearestNeighbors(n_neighbors=top_k, metric='cosine')
+    knn = NearestNeighbors(n_neighbors=top_k, metric="cosine")
     knn.fit(user_vectors)
     _, indices = knn.kneighbors(target_vector.reshape(1, -1))
     similar_user_indices = indices[0]
@@ -77,11 +97,16 @@ def find_similar_users_neo4j(target_user_name: str, top_k: int = 15) -> list:
     similar_users = []
     for i in similar_user_indices:
         # ターゲットユーザー自身は除外
-        if user_names[i] != target_user_name:
-            similarity = cosine_similarity(target_vector.reshape(1, -1), user_vectors[i].reshape(1, -1))[0][0]
-            similar_users.append({
-                "name": user_names[i],
-                "similarity": similarity
-            })
+        if user_emails[i] != target_user_email:
+            similarity = cosine_similarity(
+                target_vector.reshape(1, -1), user_vectors[i].reshape(1, -1)
+            )[0][0]
+            similar_users.append(
+                {
+                    "name": user_names[i],
+                    "similarity": similarity,
+                    "labels": user_labels[i],
+                }
+            )
 
     return similar_users
